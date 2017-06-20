@@ -13,7 +13,7 @@ export interface IDocumentCard {
 
 }
 
-export interface IDocumentCardProps extends React.Props<DocumentCard> {
+export interface IDocumentCardProps extends React.HTMLAttributes<HTMLElement | DocumentCard> {
   /**
    * Optional callback to access the IDocumentCard interface. Use this instead of ref for accessing
    * the public methods and properties of the component.
