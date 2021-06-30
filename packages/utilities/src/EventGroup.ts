@@ -1,5 +1,10 @@
-/* tslint:disable:no-string-literal */
+import { assign } from './object';
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+/**
+ * @internal
+ */
 export interface IEventRecord {
   target: any;
   eventName: string;
@@ -7,63 +12,76 @@ export interface IEventRecord {
   callback: (args?: any) => void;
   elementCallback?: (...args: any[]) => void;
   objectCallback?: (args?: any) => void;
-  useCapture: boolean;
+  options?: boolean | AddEventListenerOptions;
 }
 
+/**
+ * @internal
+ */
 export interface IEventRecordsByName {
   [eventName: string]: IEventRecordList;
 }
 
+/**
+ * @internal
+ */
 export interface IEventRecordList {
   [id: string]: IEventRecord[] | number;
   count: number;
 }
 
+/**
+ * @internal
+ */
 export interface IDeclaredEventsByName {
   [eventName: string]: boolean;
 }
 
 /** An instance of EventGroup allows anything with a handle to it to trigger events on it.
  *  If the target is an HTMLElement, the event will be attached to the element and can be
- *  triggered as usual (like clicking for onclick).
+ *  triggered as usual (like clicking for onClick).
  *  The event can be triggered by calling EventGroup.raise() here. If the target is an
  *  HTMLElement, the event gets raised and is handled by the browser. Otherwise, it gets
  *  handled here in EventGroup, and the handler is called in the context of the parent
  *  (which is passed in in the constructor).
+ *
+ * @public
+ * {@docCategory EventGroup}
  */
 export class EventGroup {
-  private static _uniqueId = 0;
+  private static _uniqueId: number = 0;
   private _parent: any;
   private _eventRecords: IEventRecord[];
-  private _id = EventGroup._uniqueId++;
-  private _isDisposed: boolean;
+  private _id: number = EventGroup._uniqueId++;
+  private _isDisposed!: boolean;
 
   /** For IE8, bubbleEvent is ignored here and must be dealt with by the handler.
    *  Events raised here by default have bubbling set to false and cancelable set to true.
    *  This applies also to built-in events being raised manually here on HTMLElements,
    *  which may lead to unexpected behavior if it differs from the defaults.
+   *
    */
-  public static raise(
-    target: any,
-    eventName: string,
-    eventArgs?: any,
-    bubbleEvent?: boolean
-  ) {
+  public static raise(target: any, eventName: string, eventArgs?: any, bubbleEvent?: boolean): boolean | undefined {
     let retVal;
 
     if (EventGroup._isElement(target)) {
-      if (document.createEvent) {
+      if (typeof document !== 'undefined' && document.createEvent) {
         let ev = document.createEvent('HTMLEvents');
 
         ev.initEvent(eventName, bubbleEvent || false, true);
-        (ev as any)['args'] = eventArgs;
+
+        assign(ev, eventArgs);
+
         retVal = target.dispatchEvent(ev);
-      } else if ((document as any)['createEventObject']) { // IE8
-        let evObj = (document as any)['createEventObject'](eventArgs);
+      } else if (typeof document !== 'undefined' && (document as any).createEventObject) {
+        // IE8
+        let evObj = (document as any).createEventObject(eventArgs);
         // cannot set cancelBubble on evObj, fireEvent will overwrite it
         target.fireEvent('on' + eventName, evObj);
       }
     } else {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore  -- FIXME: strictBindCallApply error - https://github.com/microsoft/fluentui/issues/17331
       while (target && retVal !== false) {
         let events = <IEventRecordsByName>target.__events__;
         let eventRecords = events ? events[eventName] : null;
@@ -73,6 +91,8 @@ export class EventGroup {
             if (eventRecords.hasOwnProperty(id)) {
               let eventRecordList = <IEventRecord[]>eventRecords[id];
 
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore  -- FIXME: strictBindCallApply error - https://github.com/microsoft/fluentui/issues/17331
               for (let listIndex = 0; retVal !== false && listIndex < eventRecordList.length; listIndex++) {
                 let record = eventRecordList[listIndex];
 
@@ -105,16 +125,19 @@ export class EventGroup {
     return !!declaredEvents && !!declaredEvents[eventName];
   }
 
-  public static stopPropagation(event: any) {
+  public static stopPropagation(event: any): void {
     if (event.stopPropagation) {
       event.stopPropagation();
-    } else { // IE8
+    } else {
+      // IE8
       event.cancelBubble = true;
     }
   }
 
-  private static _isElement(target: HTMLElement) {
-    return !!target && (target.addEventListener || target instanceof HTMLElement);
+  private static _isElement(target: HTMLElement): boolean {
+    return (
+      !!target && (!!target.addEventListener || (typeof HTMLElement !== 'undefined' && target instanceof HTMLElement))
+    );
   }
 
   /** parent: the context in which events attached to non-HTMLElements are called */
@@ -123,7 +146,7 @@ export class EventGroup {
     this._eventRecords = [];
   }
 
-  public dispose() {
+  public dispose(): void {
     if (!this._isDisposed) {
       this._isDisposed = true;
 
@@ -133,7 +156,7 @@ export class EventGroup {
   }
 
   /** On the target, attach a set of events, where the events object is a name to function mapping. */
-  public onAll(target: any, events: { [key: string]: (args?: any) => void; }, useCapture?: boolean) {
+  public onAll(target: any, events: { [key: string]: (args?: any) => void }, useCapture?: boolean): void {
     for (let eventName in events) {
       if (events.hasOwnProperty(eventName)) {
         this.on(target, eventName, events[eventName], useCapture);
@@ -141,15 +164,21 @@ export class EventGroup {
     }
   }
 
-  /** On the target, attach an event whose handler will be called in the context of the parent
+  /**
+   * On the target, attach an event whose handler will be called in the context of the parent
    * of this instance of EventGroup.
    */
-  public on(target: any, eventName: string, callback: (args?: any) => void, useCapture?: boolean) {
+  public on(
+    target: any,
+    eventName: string,
+    callback: (args?: any) => void,
+    options?: boolean | AddEventListenerOptions,
+  ): void {
     if (eventName.indexOf(',') > -1) {
       let events = eventName.split(/[ ,]+/);
 
       for (let i = 0; i < events.length; i++) {
-        this.on(target, events[i], callback, useCapture);
+        this.on(target, events[i], callback, options);
       }
     } else {
       let parent = this._parent;
@@ -158,14 +187,16 @@ export class EventGroup {
         eventName: eventName,
         parent: parent,
         callback: callback,
-        useCapture: useCapture || false
+        options,
       };
 
       // Initialize and wire up the record on the target, so that it can call the callback if the event fires.
       let events = <IEventRecordsByName>(target.__events__ = target.__events__ || {});
-      events[eventName] = events[eventName] || <IEventRecordList>{
-        count: 0
-      };
+      events[eventName] =
+        events[eventName] ||
+        <IEventRecordList>{
+          count: 0,
+        };
       events[eventName][this._id] = events[eventName][this._id] || [];
       (<IEventRecord[]>events[eventName][this._id]).push(eventRecord);
       events[eventName].count++;
@@ -179,6 +210,8 @@ export class EventGroup {
           let result;
           try {
             result = callback.apply(parent, args);
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore  -- FIXME: strictBindCallApply error - https://github.com/microsoft/fluentui/issues/17331
             if (result === false && args[0]) {
               let e = args[0];
 
@@ -193,7 +226,7 @@ export class EventGroup {
               e.cancelBubble = true;
             }
           } catch (e) {
-            /* ErrorHelper.log(e); */
+            // ignore
           }
 
           return result;
@@ -202,10 +235,9 @@ export class EventGroup {
         eventRecord.elementCallback = processElementEvent;
 
         if (target.addEventListener) {
-          /* tslint:disable:ban-native-functions */
-          (<EventTarget>target).addEventListener(eventName, processElementEvent, useCapture);
-          /* tslint:enable:ban-native-functions */
-        } else if (target.attachEvent) { // IE8
+          (<EventTarget>target).addEventListener(eventName, processElementEvent, options);
+        } else if (target.attachEvent) {
+          // IE8
           target.attachEvent('on' + eventName, processElementEvent);
         }
       } else {
@@ -225,13 +257,20 @@ export class EventGroup {
     }
   }
 
-  public off(target?: any, eventName?: string, callback?: (args?: any) => void, useCapture?: boolean) {
+  public off(
+    target?: any,
+    eventName?: string,
+    callback?: (args?: any) => void,
+    options?: boolean | AddEventListenerOptions,
+  ): void {
     for (let i = 0; i < this._eventRecords.length; i++) {
       let eventRecord = this._eventRecords[i];
-      if ((!target || target === eventRecord.target) &&
+      if (
+        (!target || target === eventRecord.target) &&
         (!eventName || eventName === eventRecord.eventName) &&
         (!callback || callback === eventRecord.callback) &&
-        ((typeof useCapture !== 'boolean') || useCapture === eventRecord.useCapture)) {
+        (typeof options !== 'boolean' || options === eventRecord.options)
+      ) {
         let events = <IEventRecordsByName>eventRecord.target.__events__;
         let targetArrayLookup = events[eventRecord.eventName];
         let targetArray = targetArrayLookup ? <IEventRecord[]>targetArrayLookup[this._id] : null;
@@ -253,8 +292,13 @@ export class EventGroup {
 
         if (eventRecord.elementCallback) {
           if (eventRecord.target.removeEventListener) {
-            eventRecord.target.removeEventListener(eventRecord.eventName, eventRecord.elementCallback, eventRecord.useCapture);
-          } else if (eventRecord.target.detachEvent) { // IE8
+            eventRecord.target.removeEventListener(
+              eventRecord.eventName,
+              eventRecord.elementCallback,
+              eventRecord.options,
+            );
+          } else if (eventRecord.target.detachEvent) {
+            // IE8
             eventRecord.target.detachEvent('on' + eventRecord.eventName, eventRecord.elementCallback);
           }
         }
@@ -265,13 +309,13 @@ export class EventGroup {
   }
 
   /** Trigger the given event in the context of this instance of EventGroup. */
-  public raise(eventName: string, eventArgs?: any, bubbleEvent?: boolean): any {
+  public raise(eventName: string, eventArgs?: any, bubbleEvent?: boolean): boolean | undefined {
     return EventGroup.raise(this._parent, eventName, eventArgs, bubbleEvent);
   }
 
   /** Declare an event as being supported by this instance of EventGroup. */
-  public declare(event: any) {
-    let declaredEvents = this._parent.__declaredEvents = this._parent.__declaredEvents || {};
+  public declare(event: string | string[]): void {
+    let declaredEvents = (this._parent.__declaredEvents = this._parent.__declaredEvents || {});
 
     if (typeof event === 'string') {
       declaredEvents[event] = true;

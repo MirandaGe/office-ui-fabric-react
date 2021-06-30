@@ -2,76 +2,81 @@ import * as React from 'react';
 import { Async } from './Async';
 import { EventGroup } from './EventGroup';
 import { IDisposable } from './IDisposable';
-import { warnDeprecations, warnMutuallyExclusive, ISettingsMap } from './warn';
+import { ISettingsMap } from './warn/warn';
+import { warnConditionallyRequiredProps } from './warn/warnConditionallyRequiredProps';
+import { warnMutuallyExclusive } from './warn/warnMutuallyExclusive';
+import { warnDeprecations } from './warn/warnDeprecations';
+import { IRefObject } from './createRef';
+import { IBaseProps } from './BaseComponent.types';
 
-export interface IBaseProps {
-  componentRef?: any;
-}
-
-export class BaseComponent<P extends IBaseProps, S> extends React.Component<P, S> {
+/**
+ * BaseComponent class, which provides basic helpers for all components.
+ *
+ * @public
+ * {@docCategory BaseComponent}
+ *
+ * @deprecated Do not use. We are moving away from class component.
+ */
+export class BaseComponent<TProps extends IBaseProps = {}, TState = {}> extends React.Component<TProps, TState> {
   /**
-   * External consumers should override BaseComponent.onError to hook into error messages that occur from
-   * exceptions thrown from within components.
+   * @deprecated Use React's error boundaries instead.
    */
-  public static onError: ((errorMessage?: string, ex?: any) => void);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public static onError: (errorMessage?: string, ex?: any) => void;
 
   /**
    * Controls whether the componentRef prop will be resolved by this component instance. If you are
    * implementing a passthrough (higher-order component), you would set this to false and pass through
    * the props to the inner component, allowing it to resolve the componentRef.
    */
-  protected _shouldUpdateComponentRef: boolean;
+  protected _skipComponentRefResolution!: boolean;
 
-  private __async: Async;
-  private __events: EventGroup;
-  private __disposables: IDisposable[] | null;
-  private __resolves: { [name: string]: (ref: any) => any };
-  private __className: string;
+  private __async!: Async;
+  private __events!: EventGroup;
+  private __disposables!: IDisposable[] | null;
+  private __resolves!: { [name: string]: (ref: React.ReactNode) => React.ReactNode };
+  private __className!: string;
 
   /**
    * BaseComponent constructor
    * @param props - The props for the component.
    * @param context - The context for the component.
    */
-  constructor(props?: P, context?: any) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  constructor(props: TProps, context?: any) {
     super(props, context);
 
-    if (props) {
-      this.props = props;
-    }
-
-    this._shouldUpdateComponentRef = true;
-
+    // eslint-disable-next-line deprecation/deprecation
     _makeAllSafe(this, BaseComponent.prototype, [
-      'componentWillMount',
       'componentDidMount',
       'shouldComponentUpdate',
-      'componentWillUpdate',
-      'componentWillReceiveProps',
+      'getSnapshotBeforeUpdate',
       'render',
       'componentDidUpdate',
-      'componentWillUnmount'
+      'componentWillUnmount',
     ]);
   }
 
   /**
-   * When the component will receive props, make sure the componentRef is updated.
+   * When the component receives props, make sure the componentRef is updated.
    */
-  public componentWillReceiveProps(newProps?: P, newContext?: any) {
-    this._updateComponentRef(this.props, newProps);
+  public componentDidUpdate(prevProps: TProps, prevState: TState): void {
+    this._updateComponentRef(prevProps, this.props);
   }
 
   /**
    * When the component has mounted, update the componentRef.
    */
-  public componentDidMount() {
-    this._updateComponentRef(undefined, this.props);
+  public componentDidMount(): void {
+    this._setComponentRef(this.props.componentRef, this);
   }
 
   /**
    * If we have disposables, dispose them automatically on unmount.
    */
-  public componentWillUnmount() {
+  public componentWillUnmount(): void {
+    this._setComponentRef(this.props.componentRef, null);
+
     if (this.__disposables) {
       for (let i = 0, len = this._disposables.length; i < len; i++) {
         let disposable = this.__disposables[i];
@@ -87,12 +92,12 @@ export class BaseComponent<P extends IBaseProps, S> extends React.Component<P, S
   /**
    * Gets the object's class name.
    */
-  public get className() {
+  public get className(): string {
     if (!this.__className) {
       let funcNameRegex = /function (.{1,})\(/;
-      let results = (funcNameRegex).exec((this).constructor.toString());
+      let results = funcNameRegex.exec(this.constructor.toString());
 
-      this.__className = (results && results.length > 1) ? results[1] : '';
+      this.__className = results && results.length > 1 ? results[1] : '';
     }
 
     return this.__className;
@@ -142,14 +147,17 @@ export class BaseComponent<P extends IBaseProps, S> extends React.Component<P, S
    * Helper to return a memoized ref resolver function.
    * @param refName - Name of the member to assign the ref to.
    * @returns A function instance keyed from the given refname.
+   * @deprecated Use `createRef` from React.createRef.
    */
-  protected _resolveRef(refName: string): (ref: any) => any {
+  protected _resolveRef(refName: string): (ref: React.ReactNode) => React.ReactNode {
     if (!this.__resolves) {
       this.__resolves = {};
     }
+
     if (!this.__resolves[refName]) {
-      this.__resolves[refName] = (ref) => {
-        return (this as any)[refName] = ref;
+      this.__resolves[refName] = (ref: React.ReactNode) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return ((this as any)[refName] = ref);
       };
     }
 
@@ -159,27 +167,22 @@ export class BaseComponent<P extends IBaseProps, S> extends React.Component<P, S
   /**
    * Updates the componentRef (by calling it with "this" when necessary.)
    */
-  protected _updateComponentRef(currentProps: IBaseProps | undefined, newProps: IBaseProps = {}) {
-    if (this._shouldUpdateComponentRef &&
-      ((!currentProps && newProps.componentRef) ||
-        (currentProps && currentProps.componentRef !== newProps.componentRef))) {
-
-      if (currentProps && currentProps.componentRef) {
-        currentProps.componentRef(null);
-      }
-
-      if (newProps.componentRef) {
-        newProps.componentRef(this);
-      }
+  protected _updateComponentRef(currentProps: IBaseProps, newProps: IBaseProps = {}): void {
+    // currentProps *should* always be defined, but verify that just in case a subclass is manually
+    // calling a lifecycle method with no parameters (which has happened) or other odd usage.
+    if (currentProps && newProps && currentProps.componentRef !== newProps.componentRef) {
+      this._setComponentRef(currentProps.componentRef, null);
+      this._setComponentRef(newProps.componentRef, this);
     }
   }
+
   /**
    * Warns when a deprecated props are being used.
    *
    * @param deprecationMap - The map of deprecations, where key is the prop name and the value is
    * either null or a replacement prop name.
    */
-  protected _warnDeprecations(deprecationMap: ISettingsMap<P>) {
+  protected _warnDeprecations(deprecationMap: ISettingsMap<TProps>): void {
     warnDeprecations(this.className, this.props, deprecationMap);
   }
 
@@ -188,8 +191,39 @@ export class BaseComponent<P extends IBaseProps, S> extends React.Component<P, S
    *
    * @param mutuallyExclusiveMap - The map of mutually exclusive props.
    */
-  protected _warnMutuallyExclusive(mutuallyExclusiveMap: ISettingsMap<P>) {
+  protected _warnMutuallyExclusive(mutuallyExclusiveMap: ISettingsMap<TProps>): void {
     warnMutuallyExclusive(this.className, this.props, mutuallyExclusiveMap);
+  }
+
+  /**
+   * Warns when props are required if a condition is met.
+   *
+   * @param requiredProps - The name of the props that are required when the condition is met.
+   * @param conditionalPropName - The name of the prop that the condition is based on.
+   * @param condition - Whether the condition is met.
+   */
+  protected _warnConditionallyRequiredProps(
+    requiredProps: string[],
+    conditionalPropName: string,
+    condition: boolean,
+  ): void {
+    warnConditionallyRequiredProps(this.className, this.props, requiredProps, conditionalPropName, condition);
+  }
+
+  private _setComponentRef<TRefInterface>(
+    ref: IRefObject<TRefInterface> | undefined,
+    value: TRefInterface | null,
+  ): void {
+    if (!this._skipComponentRefResolution && ref) {
+      if (typeof ref === 'function') {
+        ref(value);
+      }
+
+      if (typeof ref === 'object') {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (ref as any).current = value;
+      }
+    }
   }
 }
 
@@ -198,33 +232,29 @@ export class BaseComponent<P extends IBaseProps, S> extends React.Component<P, S
  * ensures that the BaseComponent's methods are called before the subclass's. This ensures that
  * componentWillUnmount in the base is called and that things in the _disposables array are disposed.
  */
-function _makeAllSafe(obj: BaseComponent<any, any>, prototype: Object, methodNames: string[]) {
+// eslint-disable-next-line deprecation/deprecation
+function _makeAllSafe(obj: BaseComponent<{}, {}>, prototype: Object, methodNames: string[]): void {
   for (let i = 0, len = methodNames.length; i < len; i++) {
     _makeSafe(obj, prototype, methodNames[i]);
   }
 }
 
-function _makeSafe(obj: BaseComponent<any, any>, prototype: Object, methodName: string) {
+// eslint-disable-next-line deprecation/deprecation
+function _makeSafe(obj: BaseComponent<{}, {}>, prototype: Object, methodName: string): void {
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   let classMethod = (obj as any)[methodName];
   let prototypeMethod = (prototype as any)[methodName];
 
   if (classMethod || prototypeMethod) {
-    (obj as any)[methodName] = function () {
+    (obj as any)[methodName] = function (...args: any[]): any {
+      /* eslint-enable @typescript-eslint/no-explicit-any */
       let retVal;
 
-      try {
-        if (prototypeMethod) {
-          retVal = prototypeMethod.apply(this, arguments);
-        }
-        if (classMethod !== prototypeMethod) {
-          retVal = classMethod.apply(this, arguments);
-        }
-      } catch (e) {
-        const errorMessage = `Exception in ${obj.className}.${methodName}(): ${typeof e === 'string' ? e : e.stack}`;
-
-        if (BaseComponent.onError) {
-          BaseComponent.onError(errorMessage, e);
-        }
+      if (prototypeMethod) {
+        retVal = prototypeMethod.apply(this, args);
+      }
+      if (classMethod !== prototypeMethod) {
+        retVal = classMethod.apply(this, args);
       }
 
       return retVal;
@@ -232,12 +262,11 @@ function _makeSafe(obj: BaseComponent<any, any>, prototype: Object, methodName: 
   }
 }
 
-BaseComponent.onError = (errorMessage) => {
-  console.error(errorMessage);
-  throw errorMessage;
-};
-
 /**
  * Simple constant function for returning null, used to render empty templates in JSX.
+ *
+ * @public
  */
-export function nullRender(): JSX.Element | null { return null; }
+export function nullRender(): JSX.Element | null {
+  return null;
+}
