@@ -1,0 +1,33 @@
+{
+  "name": "@fluentui/test-utilities",
+  "version": "8.5.1",
+  "description": "Utilities used when testing components.",
+  "main": "lib-commonjs/index.js",
+  "typings": "lib-commonjs/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/fluentui"
+  },
+  "license": "MIT",
+  "scripts": {
+    "build": "yarn run -T just-scripts build",
+    "clean": "yarn run -T just-scripts clean",
+    "code-style": "yarn run -T just-scripts code-style",
+    "just": "yarn run -T just-scripts",
+    "lint": "yarn run -T just-scripts lint",
+    "start-test": "yarn run -T just-scripts jest-watch",
+    "test": "yarn run -T just-scripts test"
+  },
+  "peerDependencies": {
+    "@types/react": ">=16.8.0 <20.0.0",
+    "enzyme": "^3.0.0",
+    "react": ">=16.8.0 <20.0.0",
+    "react-test-renderer": ">=16.3.0 <20.0.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./lib-commonjs/index.d.ts",
+      "require": "./lib-commonjs/index.js"
+    }
+  }
+}

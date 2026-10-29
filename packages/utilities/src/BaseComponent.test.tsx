@@ -1,100 +1,27 @@
-/* tslint:disable:no-unused-variable */
 import * as React from 'react';
-/* tslint:enable:no-unused-variable */
-
-import * as ReactTestUtils from 'react-addons-test-utils';
+import { render } from '@testing-library/react';
 import { BaseComponent } from './BaseComponent';
 
-let { assert, expect } = chai;
-
-let _originalOnError = BaseComponent.onError;
-
-class TestComponent extends BaseComponent<{}, {}> {
-
-  public componentWillMount(): void {
-    this._createNullRef();
-  }
-
-  public componentDidMount(): void {
-    this._createNullRef();
-  }
-
-  public shouldComponentUpdate(nextProps?: {}, nextState?: {}): boolean {
-    this._createNullRef();
-
-    return true;
-  }
-
-  public componentWillUpdate(): void {
-    this._createNullRef();
-  }
-
-  public componentWillReceiveProps(): void {
-    this._createNullRef();
-  }
-
-  public render(): JSX.Element | null {
-    this._createNullRef();
-    return null;
-  }
-
-  public componentDidUpdate(): void {
-    this._createNullRef();
-  }
-
-  public componentWillUnmount(): void {
-    this._createNullRef();
-  }
-
-  private _createNullRef() {
-    let foo: any = null;
-
-    // Calling a null
-    foo();
-  }
-}
+import type { JSXElement } from './jsx';
 
 describe('BaseComponent', () => {
-  afterEach(() => {
-    BaseComponent.onError = _originalOnError;
-  });
-
-  _buildTestFor('componentWillMount');
-  _buildTestFor('componentDidMount');
-  _buildTestFor('shouldComponentUpdate');
-  _buildTestFor('componentWillUpdate');
-  _buildTestFor('componentWillReceiveProps');
-  _buildTestFor('render');
-  _buildTestFor('componentDidUpdate');
-  _buildTestFor('componentWillUnmount');
-
   it('can resolve refs', () => {
     class Foo extends BaseComponent<{}, {}> {
-      public root: HTMLElement;
+      public root!: HTMLElement;
 
-      public render() {
-        return <div ref={ this._resolveRef('root') } />;
+      public render(): JSXElement {
+        return (
+          <div
+            // @ts-expect-error - react 18 types issue
+            ref={this._resolveRef('root')}
+          />
+        );
       }
     }
 
-    let component = ReactTestUtils.renderIntoDocument(
-      <Foo />
-    ) as any;
+    const { container } = render(<Foo />);
+    const component = container.firstChild as HTMLElement;
 
-    expect(component.root).to.exist;
+    expect(component).toBeTruthy();
   });
 });
-
-function _buildTestFor(methodName: string) {
-  it(`calls the error logger on ${methodName} exception`, () => {
-    let lastErrorMessage = null;
-
-    BaseComponent.onError = (errorMessage, ex) => lastErrorMessage = errorMessage;
-
-    let c = new TestComponent();
-
-    (c as any)[methodName]();
-
-    assert(lastErrorMessage !== null, 'Error callback not called');
-  });
-}

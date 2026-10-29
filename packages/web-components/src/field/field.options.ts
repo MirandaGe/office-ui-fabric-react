@@ -1,0 +1,63 @@
+import { FluentDesignSystem } from '../fluent-design-system.js';
+import type { ValuesOf } from '../utils/typings.js';
+
+/**
+ * Label position values
+ * @public
+ */
+export const LabelPosition = {
+  above: 'above',
+  after: 'after',
+  before: 'before',
+} as const;
+
+/** @public */
+export type LabelPosition = ValuesOf<typeof LabelPosition>;
+
+/**
+ * Synthetic type for slotted input elements
+ * @public
+ */
+export type SlottableInput = HTMLElement &
+  ElementInternals & {
+    elementInternals?: ElementInternals;
+    required: boolean;
+    disabled: boolean;
+    readOnly: boolean;
+    checked?: boolean;
+    value?: string;
+
+    // Dropdown
+    control?: HTMLButtonElement | HTMLInputElement;
+    constructor: {
+      elementIdentity?: string;
+    };
+  };
+
+/**
+ * Synthetic type for slotted message elements
+ * @public
+ */
+export const ValidationFlags = {
+  badInput: 'bad-input',
+  customError: 'custom-error',
+  patternMismatch: 'pattern-mismatch',
+  rangeOverflow: 'range-overflow',
+  rangeUnderflow: 'range-underflow',
+  stepMismatch: 'step-mismatch',
+  tooLong: 'too-long',
+  tooShort: 'too-short',
+  typeMismatch: 'type-mismatch',
+  valueMissing: 'value-missing',
+  valid: 'valid',
+} as const;
+
+/** @public */
+export type ValidationFlags = ValuesOf<typeof ValidationFlags>;
+
+/**
+ * The tag name for the field element.
+ *
+ * @public
+ */
+export const tagName = `${FluentDesignSystem.prefix}-field` as const;

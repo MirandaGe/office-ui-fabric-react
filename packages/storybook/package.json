@@ -1,0 +1,31 @@
+{
+  "name": "@fluentui/storybook",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Storybook addons for @fluentui/react",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/fluentui"
+  },
+  "license": "MIT",
+  "scripts": {
+    "build": "yarn run -T just-scripts build",
+    "clean": "yarn run -T just-scripts clean",
+    "code-style": "yarn run -T just-scripts code-style",
+    "just": "yarn run -T just-scripts",
+    "lint": "yarn run -T just-scripts lint"
+  },
+  "dependencies": {
+    "@fluentui/azure-themes": "^8.6.153",
+    "@fluentui/react": "^8.125.10",
+    "@fluentui/theme": "^2.7.4",
+    "@fluentui/theme-samples": "^8.7.229",
+    "tslib": "^2.1.0"
+  },
+  "peerDependencies": {
+    "@types/react": ">=16.8.0 <20.0.0",
+    "react": ">=16.8.0 <20.0.0"
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "name": "react-components",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "sourceRoot": "packages/react-components/react-components/src",
+  "tags": ["vNext", "platform:web"],
+  "implicitDependencies": [],
+  "metadata": {
+    "exportMap": {
+      "root": true,
+      "subpathEntryPoints": ["src/unstable/index.ts"]
+    },
+    "bundleSizeFixtures": {
+      "BaseHooks.fixture.js": {
+        "kind": "baseHooks",
+        "name": "react-components: all base hooks"
+      }
+    }
+  },
+  "targets": {
+    "build": {
+      "options": {
+        "assets": [
+          {
+            "input": "{projectRoot}/src/unstable",
+            "output": "unstable",
+            "glob": "*.json__tmpl__",
+            "substitutions": {
+              "__tmpl__": ""
+            }
+          },
+          {
+            "input": "{projectRoot}/src/unstable",
+            "output": "dist",
+            "glob": "*.d.ts__tmpl__",
+            "substitutions": {
+              "__tmpl__": ""
+            }
+          }
+        ]
+      }
+    }
+  }
+}

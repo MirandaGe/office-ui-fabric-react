@@ -1,0 +1,20 @@
+{
+  "name": "@fluentui/common-styles",
+  "version": "1.2.78",
+  "description": "Common style definitions for Fluent UI React components",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/fluentui"
+  },
+  "license": "MIT",
+  "scripts": {
+    "build": "yarn run -T just-scripts build",
+    "clean": "yarn run -T just-scripts clean",
+    "code-style": "yarn run -T just-scripts code-style",
+    "just": "yarn run -T just-scripts",
+    "update-sass-theme-files": "node ./scripts/generateDefaultThemeSassFiles.js"
+  },
+  "dependencies": {
+    "office-ui-fabric-core": "^11.0.0"
+  }
+}

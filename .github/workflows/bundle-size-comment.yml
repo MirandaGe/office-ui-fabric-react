@@ -1,0 +1,43 @@
+name: Bundle size | Comment on PR
+on:
+  workflow_run:
+    workflows: ['Bundle size']
+    types:
+      - completed
+
+jobs:
+  comment:
+    runs-on: ubuntu-latest
+    if: ${{ github.repository_owner == 'microsoft' && github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success' }}
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            .github
+
+      - name: Download artifact
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: monosize-report
+          path: ./results
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Load PR number
+        id: pr_number
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          result-encoding: string
+          script: |
+            const run = require('./.github/scripts/validate-pr-number');
+            return await run({ filePath: 'results/pr.txt', github, context });
+
+      - name: 'Comment on PR'
+        uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88 # v3.0.5
+        with:
+          header: bundle-size-report
+          number: ${{ steps.pr_number.outputs.result }}
+          path: ./results/monosize-report.md

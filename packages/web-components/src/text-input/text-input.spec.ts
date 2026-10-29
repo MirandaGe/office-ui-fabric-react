@@ -1,0 +1,1137 @@
+import type { InitialTemplateAttributes } from '@microsoft/fast-test-harness/fixtures/csr-fixture.js';
+import { expect, test } from '../../test/playwright/index.js';
+import type { TextInput } from './text-input.js';
+import { ImplicitSubmissionBlockingTypes, tagName } from './text-input.options.js';
+
+test.describe('TextInput', () => {
+  test.use({
+    tagName,
+  });
+
+  test('should create with document.createElement()', async ({ page, fastPage }) => {
+    await fastPage.setTemplate();
+
+    let hasError = false;
+
+    page.on('pageerror', () => {
+      hasError = true;
+    });
+
+    await page.evaluate(tagName => {
+      document.createElement(tagName);
+    }, tagName);
+
+    expect(hasError).toBe(false);
+  });
+
+  test('should focus the element when the `autofocus` attribute is present', async ({ fastPage, ssr }) => {
+    const { element } = fastPage;
+
+    const attributes: InitialTemplateAttributes = { autofocus: true };
+
+    await fastPage.setTemplate({ attributes });
+
+    await expect(element).toBeFocused();
+  });
+
+  test('should set the `disabled` attribute on the internal control', async ({ fastPage }) => {
+    const { element } = fastPage;
+    const control = element.locator('input');
+
+    await fastPage.setTemplate({ attributes: { disabled: true } });
+
+    await expect(control).toBeDisabled();
+  });
+
+  test('should set the `readonly` attribute on the internal control', async ({ fastPage }) => {
+    const { element } = fastPage;
+    const control = element.locator('input');
+
+    await fastPage.setTemplate({ attributes: { readonly: true } });
+
+    await expect(control).toHaveAttribute('readonly');
+  });
+
+  test('should set the `required` attribute on the internal control', async ({ fastPage }) => {
+    const { element } = fastPage;
+    const control = element.locator('input');
+
+    await fastPage.setTemplate({ attributes: { required: true } });
+
+    await expect(control).toHaveAttribute('required');
+  });
+
+  test('should set the `spellcheck` attribute on the internal control', async ({ fastPage }) => {
+    const { element } = fastPage;
+    const control = element.locator('input');
+
+    await fastPage.setTemplate({ attributes: { spellcheck: 'true' } });
+
+    await expect(control).toHaveAttribute('spellcheck', 'true');
+  });
+
+  test('should set the `maxlength` attribute on the internal control', async ({ fastPage }) => {
+    const { element } = fastPage;
+    const control = element.locator('input');
+
+    await fastPage.setTemplate({ attributes: { maxlength: '14' } });
+
+    await expect(control).toHaveAttribute('maxlength', '14');
+  });
+
+  test('should set the `minlength` attribute on the internal control', async ({ fastPage }) => {
+    const { element } = fastPage;
+    const control = element.locator('input');
+
+    await fastPage.setTemplate({ attributes: { minlength: '14' } });
+
+    await expect(control).toHaveAttribute('minlength', '14');
+  });
+
+  test('should set the `name` attribute on the internal control', async ({ fastPage }) => {
+    const { element } = fastPage;
+    const control = element.locator('input');
+
+    await fastPage.setTemplate({ attributes: { name: 'foo' } });
+
+    await expect(control).toHaveAttribute('name', 'foo');
+  });
+
+  test('should set the `placeholder` attribute on the internal control', async ({ fastPage }) => {
+    const { element } = fastPage;
+    const control = element.locator('input');
+
+    await fastPage.setTemplate({ attributes: { placeholder: 'foo' } });
+
+    await expect(control).toHaveAttribute('placeholder', 'foo');
+  });
+
+  test('should set the `size` attribute on the internal control', async ({ fastPage }) => {
+    const { element } = fastPage;
+    const control = element.locator('input');
+
+    await fastPage.setTemplate({ attributes: { size: '4' } });
+
+    await expect(control).toHaveAttribute('size', '4');
+  });
+
+  test('should set the `list` attribute on the internal control', async ({ fastPage }) => {
+    const { element } = fastPage;
+    const control = element.locator('input');
+
+    await fastPage.setTemplate({ attributes: { list: 'listId' } });
+
+    await expect(control).toHaveAttribute('list', 'listId');
+  });
+
+  test('should reflect `control-size` attribute values', async ({ fastPage }) => {
+    const { element } = fastPage;
+
+    await fastPage.setTemplate({ attributes: { 'control-size': 'small' } });
+
+    await expect(element).toHaveAttribute('control-size', 'small');
+    await expect(element).toHaveJSProperty('controlSize', 'small');
+
+    await element.evaluate((node: TextInput) => {
+      node.controlSize = 'medium';
+    });
+
+    await expect(element).toHaveAttribute('control-size', 'medium');
+    await expect(element).toHaveJSProperty('controlSize', 'medium');
+
+    await element.evaluate((node: TextInput) => {
+      node.controlSize = 'large';
+    });
+    await expect(element).toHaveAttribute('control-size', 'large');
+    await expect(element).toHaveJSProperty('controlSize', 'large');
+
+    await element.evaluate((node: TextInput) => {
+      node.controlSize = 'small';
+    });
+    await expect(element).toHaveAttribute('control-size', 'small');
+    await expect(element).toHaveJSProperty('controlSize', 'small');
+  });
+
+  test('should reflect `appearance` attribute values', async ({ fastPage }) => {
+    const { element } = fastPage;
+
+    await fastPage.setTemplate({ attributes: { appearance: 'outline' } });
+
+    await expect(element).toHaveAttribute('appearance', 'outline');
+    await expect(element).toHaveJSProperty('appearance', 'outline');
+
+    await element.evaluate((node: TextInput) => {
+      node.appearance = 'underline';
+    });
+
+    await expect(element).toHaveAttribute('appearance', 'underline');
+    await expect(element).toHaveJSProperty('appearance', 'underline');
+
+    await element.evaluate((node: TextInput) => {
+      node.appearance = 'filled-darker';
+    });
+    await expect(element).toHaveAttribute('appearance', 'filled-darker');
+    await expect(element).toHaveJSProperty('appearance', 'filled-darker');
+
+    await element.evaluate((node: TextInput) => {
+      node.appearance = 'filled-lighter';
+    });
+    await expect(element).toHaveAttribute('appearance', 'filled-lighter');
+    await expect(element).toHaveJSProperty('appearance', 'filled-lighter');
+  });
+
+  test('should have an undefined `value` property when no `value` attribute is set', async ({ fastPage }) => {
+    const { element } = fastPage;
+
+    await fastPage.setTemplate();
+
+    await expect(element).toHaveJSProperty('value', undefined);
+  });
+
+  test('should initialize to the provided `value` attribute when set before connection', async ({ fastPage }) => {
+    const { element } = fastPage;
+
+    await fastPage.setTemplate({ attributes: { value: 'foo' } });
+
+    await expect(element).toHaveJSProperty('value', 'foo');
+  });
+
+  test('should initialize to the provided `value` property if set pre-connection', async ({ fastPage, page }) => {
+    const { element } = fastPage;
+
+    await fastPage.setTemplate('');
+
+    await page.evaluate(tagName => {
+      const textInput = document.createElement(tagName) as TextInput;
+
+      textInput.value = 'foo';
+
+      document.body.append(textInput);
+    }, tagName);
+
+    await expect(element).toHaveJSProperty('value', 'foo');
+  });
+
+  test('should initialize to the provided `value` attribute if set post-connection', async ({ fastPage }) => {
+    const { element } = fastPage;
+    const control = element.locator('input');
+
+    await fastPage.setTemplate();
+
+    await element.evaluate(node => {
+      node.setAttribute('value', 'foo');
+    });
+
+    await expect(element).toHaveJSProperty('value', 'foo');
+
+    await expect(control).toHaveValue('foo');
+  });
+
+  test('should NOT initialize to the provided `value` attribute if set post-connection and the control has a dirty value', async ({
+    fastPage,
+  }) => {
+    const { element } = fastPage;
+    const control = element.locator('input');
+
+    await fastPage.setTemplate();
+
+    await control.fill('bar');
+
+    await element.evaluate(node => {
+      node.setAttribute('value', 'foo');
+    });
+
+    await expect(element).toHaveJSProperty('value', 'bar');
+
+    await expect(control).toHaveValue('bar');
+  });
+
+  test('should hide the label when no default slotted content is provided', async ({ fastPage }) => {
+    const { element } = fastPage;
+    const label = element.locator('label');
+
+    await fastPage.setTemplate({ innerHTML: '' });
+
+    await expect(label).toBeHidden();
+
+    await element.evaluate(node => {
+      const textNode = document.createTextNode('hello');
+
+      node.append(textNode);
+    });
+
+    await expect(label).toBeVisible();
+
+    await element.evaluate(node => {
+      node.textContent = '   ';
+    });
+
+    await expect(label).toBeHidden();
+  });
+
+  test('should hide the label when only start content is provided', async ({ fastPage }) => {
+    const { element } = fastPage;
+    const label = element.locator('label');
+
+    await fastPage.setTemplate({
+      innerHTML: /* html */ `
+        <div slot="start"></div>
+      `,
+    });
+
+    await expect(label).toBeHidden();
+
+    await element.evaluate(node => {
+      const textNode = document.createTextNode('hello');
+
+      node.append(textNode);
+    });
+
+    await expect(label).toBeVisible();
+  });
+
+  test('should hide the label when only end content is provided', async ({ fastPage }) => {
+    const { element } = fastPage;
+    const label = element.locator('label');
+
+    await fastPage.setTemplate({
+      innerHTML: /* html */ `
+        <div slot="end"></div>
+      `,
+    });
+
+    await expect(label).toBeHidden();
+
+    await element.evaluateHandle(node => {
+      const textNode = document.createTextNode('hello');
+      node.append(textNode);
+    });
+
+    await expect(label).toBeVisible();
+  });
+
+  test('should hide the label when only start and end content are provided', async ({ fastPage }) => {
+    const { element } = fastPage;
+    const label = element.locator('label');
+
+    await fastPage.setTemplate({
+      innerHTML: /* html */ `
+        <div slot="start"></div>
+        <div slot="end"></div>
+      `,
+    });
+
+    await expect(label).toBeHidden();
+
+    await element.evaluate(node => {
+      const textNode = document.createTextNode('hello');
+
+      node.append(textNode);
+    });
+
+    await expect(label).toBeVisible();
+  });
+
+  test('should hide the label when space-only text nodes are slotted', async ({ fastPage }) => {
+    const { element } = fastPage;
+    const label = element.locator('label');
+
+    await fastPage.setTemplate({
+      innerHTML: '&nbsp;',
+    });
+
+    await expect(element).toHaveText('\u00A0');
+
+    await expect(label).toBeHidden();
+  });
+
+  test('should fire a `change` event when the internal control emits a `change` event', async ({ fastPage }) => {
+    const { element } = fastPage;
+
+    await fastPage.setTemplate();
+
+    const wasChanged = element.evaluate(
+      node =>
+        new Promise(resolve => {
+          node.addEventListener('change', () => resolve(true));
+        }),
+    );
+
+    await element.evaluate((node: TextInput) => {
+      node.control.value = 'hello';
+      node.control.dispatchEvent(new Event('change'));
+    });
+
+    await expect(wasChanged).resolves.toBe(true);
+  });
+
+  test('should be invalid when the `required` attribute is set and the `value` property is empty', async ({
+    fastPage,
+  }) => {
+    const { element } = fastPage;
+
+    await fastPage.setTemplate({ attributes: { required: true } });
+
+    await expect(element).toHaveJSProperty('validity.valueMissing', true);
+
+    await expect(element).toHaveJSProperty('validity.valid', false);
+  });
+
+  test('should be valid when the `required` attribute is set and the `value` property is not empty', async ({
+    fastPage,
+  }) => {
+    const { element } = fastPage;
+
+    await fastPage.setTemplate({ attributes: { required: true, value: 'foo' } });
+
+    await expect(element).toHaveJSProperty('validity.valid', true);
+
+    await expect(element).toHaveJSProperty('validity.valueMissing', false);
+  });
+
+  test('should be valid when the `minlength` attribute is set and the `value` attribute is empty', async ({
+    fastPage,
+  }) => {
+    const { element } = fastPage;
+
+    await fastPage.setTemplate({ attributes: { minlength: '10' } });
+
+    await expect(element).toHaveJSProperty('validity.valid', true);
+
+    await expect(element).toHaveJSProperty('validity.tooShort', false);
+  });
+
+  test('should be valid when the `value` attribute length is less than the `minlength` attribute and the value is not dirty', async ({
+    fastPage,
+  }) => {
+    const { element } = fastPage;
+
+    await fastPage.setTemplate({ attributes: { minlength: '10', value: '123456789' } });
+
+    await expect(element).toHaveJSProperty('validity.valid', true);
+
+    await expect(element).toHaveJSProperty('validity.tooShort', false);
+  });
+
+  test('should be valid when the `value` attribute is not set and the `maxlength` attribute is set', async ({
+    fastPage,
+  }) => {
+    const { element } = fastPage;
+
+    await fastPage.setTemplate({ attributes: { maxlength: '10' } });
+
+    await expect(element).toHaveJSProperty('validity.valid', true);
+
+    await expect(element).toHaveJSProperty('validity.tooLong', false);
+  });
+
+  test('should report valid validity when the `value` attribute has a length which exceeds the `maxlength`', async ({
+    fastPage,
+  }) => {
+    const { element } = fastPage;
+
+    await fastPage.setTemplate({ attributes: { maxlength: '10', value: '123456789' } });
+
+    await expect(element).toHaveJSProperty('validity.tooLong', false);
+  });
+
+  test('should report valid validity when the `value` is shorter than `maxlength` and the element is `required`', async ({
+    fastPage,
+  }) => {
+    const { element } = fastPage;
+
+    await fastPage.setTemplate({ attributes: { required: true, maxlength: '10', value: '123456789' } });
+
+    await expect(element).toHaveJSProperty('validity.tooLong', false);
+  });
+
+  test('should report valid validity when the `value` property matches the `pattern` property', async ({
+    fastPage,
+  }) => {
+    const { element } = fastPage;
+
+    await fastPage.setTemplate({ attributes: { pattern: '\\d+', value: '123456789' } });
+
+    await expect(element).toHaveJSProperty('validity.patternMismatch', false);
+  });
+
+  test('should report invalid validity when `value` does not match `pattern`', async ({ fastPage }) => {
+    const { element } = fastPage;
+
+    await fastPage.setTemplate({ attributes: { pattern: 'value', value: 'other value' } });
+
+    await expect(element).toHaveJSProperty('validity.patternMismatch', true);
+  });
+
+  test('should report valid validity when `value` is an empty string', async ({ fastPage }) => {
+    const { element } = fastPage;
+
+    await fastPage.setTemplate({ attributes: { pattern: 'value', value: '' } });
+
+    await expect(element).toHaveJSProperty('validity.typeMismatch', false);
+  });
+
+  test('should have invalid invalidity with a `typeMismatch` when `value` is not a valid email', async ({
+    fastPage,
+  }) => {
+    const { element } = fastPage;
+
+    await fastPage.setTemplate({ attributes: { type: 'email', value: 'not an email' } });
+
+    await expect(element).toHaveJSProperty('validity.typeMismatch', true);
+  });
+
+  test('should be invalid when `value` is not a valid URL', async ({ fastPage }) => {
+    const { element } = fastPage;
+
+    await fastPage.setTemplate({ attributes: { type: 'url', value: 'not a url' } });
+
+    await expect(element).toHaveJSProperty('validity.valid', false);
+
+    await expect(element).toHaveJSProperty('validity.typeMismatch', true);
+  });
+
+  test('should not accept user input when the `readonly` attribute is present', async ({ fastPage }) => {
+    const { element } = fastPage;
+    const control = element.locator('input');
+
+    await fastPage.setTemplate({ attributes: { readonly: true } });
+
+    await control.fill('foo', {
+      // eslint-disable-next-line playwright/no-force-option
+      force: true,
+    });
+
+    await expect(control).toHaveValue('');
+  });
+
+  test('should not accept user input when the `disabled` attribute is present', async ({ fastPage }) => {
+    const { element } = fastPage;
+    const control = element.locator('input');
+
+    await fastPage.setTemplate({ attributes: { disabled: true } });
+
+    await control.fill('foo', {
+      // eslint-disable-next-line playwright/no-force-option
+      force: true,
+    });
+
+    await expect(control).toHaveValue('');
+  });
+
+  test('should set the `willValidate` property to `false` when the `disabled` attribute is present', async ({
+    fastPage,
+  }) => {
+    const { element } = fastPage;
+
+    await fastPage.setTemplate({ attributes: { disabled: true } });
+
+    await expect(element).toHaveJSProperty('willValidate', false);
+  });
+
+  test('should set the `willValidate` property to `false` when the `readonly` attribute is present', async ({
+    fastPage,
+  }) => {
+    const { element } = fastPage;
+
+    await fastPage.setTemplate({ attributes: { readonly: true } });
+
+    await expect(element).toHaveJSProperty('willValidate', false);
+  });
+
+  test('should set the `form` property to the parent form element', async ({ fastPage }) => {
+    const { element } = fastPage;
+
+    await fastPage.setTemplate(/* html */ `
+      <form id="foo">
+        <${tagName}></${tagName}>
+      </form>
+    `);
+
+    await expect(element).toHaveJSProperty('form.id', 'foo');
+  });
+
+  test('should set the `form` property to `null` when the element is not in a form', async ({ fastPage }) => {
+    const { element } = fastPage;
+
+    await fastPage.setTemplate();
+
+    await expect(element).toHaveJSProperty('form', null);
+  });
+
+  test('should set the `form` property to the form element referenced by the `form` attribute', async ({
+    fastPage,
+  }) => {
+    const { element } = fastPage;
+
+    await fastPage.setTemplate(/* html */ `
+      <form id="foo">
+        <${tagName} form="foo"></${tagName}>
+      </form>
+    `);
+
+    await expect(element).toHaveJSProperty('form.id', 'foo');
+  });
+
+  test('should set the `form` property to `null` when the element is in a form with the `form` attribute set to an invalid value', async ({
+    fastPage,
+  }) => {
+    const { element } = fastPage;
+
+    await fastPage.setTemplate(/* html */ `
+      <form id="foo">
+        <${tagName} form="bar"></${tagName}>
+      </form>
+    `);
+
+    await expect(element).toHaveJSProperty('form', null);
+  });
+
+  test('should submit the form via implicit submission when the form has no other controls', async ({
+    fastPage,
+    page,
+  }) => {
+    const { element } = fastPage;
+    const control = element.locator('input');
+
+    await fastPage.setTemplate(/* html */ `
+      <form id="form" action="foo">
+        <${tagName} name="testinput"></${tagName}>
+      </form>
+    `);
+
+    // Playwright won't fill custom elements
+    await control.fill('hello');
+
+    await element.press('Enter');
+
+    expect(page.url()).toMatch(/foo\?testinput=hello$/);
+  });
+
+  test('should submit the form via implicit submission when the form contains a submit button', async ({
+    fastPage,
+    page,
+  }) => {
+    const { element } = fastPage;
+    const control = element.locator('input');
+
+    await fastPage.setTemplate(/* html */ `
+      <form id="form" action="foo">
+        <${tagName} name="testinput"></${tagName}>
+        <button type="submit">Submit</button>
+      </form>
+    `);
+
+    await control.fill('hello');
+
+    await element.press('Enter');
+
+    expect(page.url()).toMatch(/foo\?testinput=hello$/);
+  });
+
+  test('should submit the form via implicit submission when the form has no other implicit submission blocking controls', async ({
+    fastPage,
+    page,
+  }) => {
+    const { element } = fastPage;
+    const control = element.locator('input');
+
+    await fastPage.setTemplate(/* html */ `
+      <form id="form" action="foo">
+        <${tagName} name="testinput"></${tagName}>
+        <button type="reset">Reset</button>
+      </form>
+    `);
+
+    // Playwright won't fill custom elements
+    await control.fill('hello');
+
+    await element.press('Enter');
+
+    expect(page.url()).toMatch(/foo\?testinput=hello$/);
+  });
+
+  test.describe('should NOT submit the form via implicit submission when the form has other implicit submission blocking controls', () => {
+    for (const type of ImplicitSubmissionBlockingTypes) {
+      test(`Blocking type: ${type}`, async ({ fastPage, page }) => {
+        const { element } = fastPage;
+        const control = element.locator('input');
+
+        await fastPage.setTemplate(/* html */ `
+          <form id="form" action="foo">
+            <${tagName} name="testinput"></${tagName}>
+            <input name="extrainput" type="${type}" value="extravalue" />
+          </form>
+        `);
+
+        await control.fill('hello');
+
+        await element.press('Enter');
+
+        expect(page.url()).not.toMatch(/foo\?testinput=hello&extrainput=extravalue$/);
+      });
+    }
+  });
+
+  test('should prevent form submission when the `required` attribute is set and the `value` property is empty', async ({
+    fastPage,
+    page,
+  }) => {
+    const { element } = fastPage;
+
+    await fastPage.setTemplate(/* html */ `
+      <form id="form" action="foo">
+        <${tagName} name="testinput" required></${tagName}>
+      </form>
+    `);
+
+    await element.press('Enter');
+
+    expect(page.url()).not.toMatch(/foo/);
+  });
+
+  test('should NOT prevent form submission when the `readonly` attribute is set', async ({ fastPage, page }) => {
+    const { element } = fastPage;
+    const control = element.locator('input');
+
+    await fastPage.setTemplate(/* html */ `
+      <form action="foo">
+        <${tagName} name="testinput" readonly></${tagName}>
+      </form>
+    `);
+
+    await control.press('Enter');
+
+    expect(page.url()).toMatch(/foo/);
+  });
+
+  test.describe('Enter key and `change` event ordering', () => {
+    const template = /* html */ `
+      <form>
+        <${tagName} name="testinput"></${tagName}>
+        <button id="submit" type="button">submit</button>
+      </form>
+    `;
+
+    test('should fire `change` before `submit` when Enter is pressed after typing', async ({ fastPage }) => {
+      const { element, page } = fastPage;
+      const form = page.locator('form');
+      const control = element.locator('input');
+
+      await fastPage.setTemplate(template);
+
+      const changed = element.evaluate(
+        n => new Promise<number>(resolve => n.addEventListener('change', e => resolve(e.timeStamp))),
+      );
+      const submitted = form.evaluate(
+        n =>
+          new Promise<number>(resolve =>
+            n.addEventListener('submit', e => {
+              e.preventDefault();
+              resolve(e.timeStamp);
+            }),
+          ),
+      );
+
+      await control.focus();
+      await page.keyboard.type('hello');
+      await page.keyboard.press('Enter');
+
+      const [changedAt, submittedAt] = await Promise.all([changed, submitted]);
+
+      // WebKit timestamps have coarse precision, so both events can share a value.
+      expect(changedAt).toBeLessThanOrEqual(submittedAt);
+    });
+
+    test('should NOT fire `change` when Enter is pressed without editing', async ({ fastPage }) => {
+      const { element, page } = fastPage;
+      const form = page.locator('form');
+      const control = element.locator('input');
+
+      await fastPage.setTemplate(template);
+
+      await element.evaluate(node => node.addEventListener('change', () => (node.dataset.changed = 'true')));
+      await form.evaluate(node =>
+        node.addEventListener('submit', e => {
+          e.preventDefault();
+          node.dataset.submitted = 'true';
+        }),
+      );
+
+      await control.focus();
+      await page.keyboard.press('Enter');
+
+      // Handlers run synchronously during the key press, so `submit` proves `change` had its chance.
+      await expect(form).toHaveAttribute('data-submitted', 'true');
+      await expect(element).not.toHaveAttribute('data-changed');
+    });
+
+    test('should NOT fire focus events or a duplicate `change` when Enter is pressed after typing', async ({
+      fastPage,
+    }) => {
+      const { element, page } = fastPage;
+      const control = element.locator('input');
+
+      await fastPage.setTemplate(template);
+
+      await element.evaluate(node => {
+        node.dataset.changes = '0';
+        node.dataset.focusEvents = '0';
+        node.addEventListener('change', () => (node.dataset.changes = String(Number(node.dataset.changes) + 1)));
+        ['focusin', 'focusout'].forEach(type =>
+          node.addEventListener(type, () => (node.dataset.focusEvents = String(Number(node.dataset.focusEvents) + 1))),
+        );
+      });
+
+      await page.locator('form').evaluate(node => node.addEventListener('submit', e => e.preventDefault()));
+
+      await control.focus();
+      await page.keyboard.type('hello');
+
+      // Focus events from the initial `focus()` are not part of the assertion.
+      await element.evaluate(node => (node.dataset.focusEvents = '0'));
+      await page.keyboard.press('Enter');
+
+      await expect(element).toHaveAttribute('data-changes', '1');
+      await expect(element).toHaveAttribute('data-focus-events', '0');
+
+      // The browser's own `change` on blur must not be re-emitted.
+      await page.locator('#submit').focus();
+
+      await expect(element).toHaveAttribute('data-changes', '1');
+    });
+
+    test('should fire `change` again on blur when edited after Enter', async ({ fastPage }) => {
+      const { element, page } = fastPage;
+      const control = element.locator('input');
+
+      await fastPage.setTemplate(template);
+
+      await element.evaluate(node => {
+        node.dataset.changes = '0';
+        node.addEventListener('change', () => (node.dataset.changes = String(Number(node.dataset.changes) + 1)));
+      });
+
+      await page.locator('form').evaluate(node => node.addEventListener('submit', e => e.preventDefault()));
+
+      await control.focus();
+      await page.keyboard.type('hello');
+      await page.keyboard.press('Enter');
+      await page.keyboard.type('!');
+      await page.locator('#submit').focus();
+
+      await expect(element).toHaveAttribute('data-changes', '2');
+    });
+
+    test('should keep focus on the control after Enter', async ({ fastPage }) => {
+      const { element, page } = fastPage;
+      const form = page.locator('form');
+      const control = element.locator('input');
+
+      await fastPage.setTemplate(template);
+
+      const submitted = form.evaluate(
+        node =>
+          new Promise<boolean>(resolve => {
+            node.addEventListener('submit', e => {
+              e.preventDefault();
+              resolve(true);
+            });
+          }),
+      );
+
+      await control.focus();
+      await page.keyboard.type('hello');
+      await page.keyboard.press('Enter');
+
+      await expect(submitted).resolves.toBe(true);
+      await expect(control).toBeFocused();
+    });
+
+    test('should NOT take focus back when a submit handler moves focus elsewhere', async ({ fastPage }) => {
+      const { element, page } = fastPage;
+      const form = page.locator('form');
+      const control = element.locator('input');
+      const submit = page.locator('#submit');
+
+      await fastPage.setTemplate(template);
+
+      const submitted = form.evaluate(
+        node =>
+          new Promise<boolean>(resolve => {
+            node.addEventListener('submit', e => {
+              e.preventDefault();
+              (document.getElementById('submit') as HTMLButtonElement).focus();
+              resolve(true);
+            });
+          }),
+      );
+
+      await control.focus();
+      await page.keyboard.type('hello');
+      await page.keyboard.press('Enter');
+
+      await expect(submitted).resolves.toBe(true);
+      await expect(submit).toBeFocused();
+    });
+
+    test('should NOT submit or move focus to the control when Enter is pressed on slotted content', async ({
+      fastPage,
+    }) => {
+      const { element, page } = fastPage;
+      const form = page.locator('form');
+      const slotted = page.locator('#slotted');
+
+      await fastPage.setTemplate(/* html */ `
+        <form>
+          <${tagName} name="testinput">
+            <button slot="start" id="slotted" type="button">x</button>
+          </${tagName}>
+        </form>
+      `);
+
+      await form.evaluate(node =>
+        node.addEventListener('submit', e => {
+          e.preventDefault();
+          node.dataset.submitted = 'true';
+        }),
+      );
+
+      await slotted.focus();
+      await page.keyboard.press('Enter');
+
+      await expect(form).not.toHaveAttribute('data-submitted');
+      await expect(slotted).toBeFocused();
+      await expect(element.locator('input')).not.toBeFocused();
+    });
+
+    test('should NOT submit or fire `change` when Enter is pressed during IME composition', async ({ fastPage }) => {
+      const { element, page } = fastPage;
+      const form = page.locator('form');
+      const control = element.locator('input');
+
+      await fastPage.setTemplate(template);
+
+      await form.evaluate(node =>
+        node.addEventListener('submit', e => {
+          e.preventDefault();
+          node.dataset.submitted = 'true';
+        }),
+      );
+
+      await control.focus();
+      await control.evaluate(node => {
+        node.dispatchEvent(
+          new KeyboardEvent('keydown', { key: 'Enter', isComposing: true, bubbles: true, composed: true }),
+        );
+      });
+
+      await expect(form).not.toHaveAttribute('data-submitted');
+      await expect(control).toBeFocused();
+    });
+
+    test('should NOT submit and should stay focused when `required` and empty', async ({ fastPage }) => {
+      const { element, page } = fastPage;
+      const form = page.locator('form');
+      const control = element.locator('input');
+
+      await fastPage.setTemplate(/* html */ `
+        <form>
+          <${tagName} name="testinput" required></${tagName}>
+        </form>
+      `);
+
+      await form.evaluate(node =>
+        node.addEventListener('submit', e => {
+          e.preventDefault();
+          node.dataset.submitted = 'true';
+        }),
+      );
+
+      await control.focus();
+      await page.keyboard.press('Enter');
+
+      await expect(form).not.toHaveAttribute('data-submitted');
+      await expect(control).toBeFocused();
+    });
+  });
+
+  test('should only submit form once when Enter is pressed', async ({ fastPage }) => {
+    const { element, page } = fastPage;
+    const control = element.locator('input');
+    const form = page.locator('form');
+
+    await fastPage.setTemplate(/* html */ `
+      <form>
+        <${tagName} name="testinput"></${tagName}>
+      </form>
+    `);
+
+    await form.evaluate(node => {
+      node.addEventListener('submit', evt => {
+        if (!node.dataset.count) {
+          node.dataset.count = '0';
+        }
+        const count = Number(node.dataset.count) + 1;
+        node.dataset.count = String(count);
+        evt.preventDefault();
+      });
+    });
+
+    await control.focus();
+    await page.keyboard.press('Enter');
+
+    await expect(form).toHaveAttribute('data-count', '1');
+  });
+
+  test('should allow comma-separated values when the `multiple` attribute is set and the `type` is "email"', async ({
+    fastPage,
+    page,
+  }) => {
+    const { element } = fastPage;
+    const control = element.locator('input');
+
+    await fastPage.setTemplate(/* html */ `
+      <form action="foo">
+        <${tagName} name="testinput" multiple type="email"></${tagName}>
+      </form>
+    `);
+
+    await control.fill('hello@example.com, world@example.com');
+
+    await element.press('Enter');
+
+    expect(page.url()).toMatch(/foo\?testinput=hello%40example\.com%2Cworld%40example\.com/);
+  });
+
+  test('should allow focusable start and end slotted content to be focused', async ({ fastPage, page }) => {
+    const { element } = fastPage;
+    const control = element.locator('input');
+    const start = element.locator('[slot="start"]');
+    const end = element.locator('[slot="end"]');
+    const label = element.locator('text=Label');
+
+    await fastPage.setTemplate({
+      innerHTML: /* html */ `
+        <span>Label</span>
+        <button tabindex="0" slot="start">start</button>
+        <button tabindex="0" slot="end">end</button>
+      `,
+    });
+
+    await page.keyboard.press('Tab');
+
+    await expect(start).toBeFocused();
+
+    await page.keyboard.press('Tab');
+
+    await expect(control).toBeFocused();
+
+    await page.keyboard.press('Tab');
+
+    await expect(end).toBeFocused();
+
+    await test.step('should focus the control when the label is clicked', async () => {
+      await label.click();
+
+      await expect(control).toBeFocused();
+    });
+  });
+
+  test('should reset the value to an empty string when the form is reset', async ({ fastPage, page }) => {
+    const { element } = fastPage;
+    const control = element.locator('input');
+    const reset = page.locator('button');
+
+    await fastPage.setTemplate(/* html */ `
+      <form id="form" action="foo">
+        <${tagName} name="testinput"></${tagName}>
+        <button type="reset">Reset</button>
+      </form>
+    `);
+
+    await expect(control).toHaveValue('');
+
+    await control.fill('hello');
+
+    await reset.click();
+
+    await expect(control).toHaveValue('');
+  });
+
+  test('should reset the value to the initial value when the form is reset and the `value` attribute was set pre-connection', async ({
+    fastPage,
+    page,
+  }) => {
+    const { element } = fastPage;
+    const control = element.locator('input');
+    const reset = page.locator('button');
+
+    await fastPage.setTemplate(/* html */ `
+      <form id="form" action="foo">
+        <${tagName} name="testinput" value="initial"></${tagName}>
+        <button type="reset">Reset</button>
+      </form>
+    `);
+
+    await expect(control).toHaveValue('initial');
+
+    await control.fill('hello');
+
+    await reset.click();
+
+    await expect(control).toHaveValue('initial');
+  });
+
+  test('should change the `value` property when the `current-value` attribute changes', async ({ fastPage, page }) => {
+    const { element } = fastPage;
+
+    await fastPage.setTemplate();
+
+    await element.evaluate(node => {
+      node.setAttribute('current-value', 'foo');
+    });
+
+    await expect(element).toHaveJSProperty('value', 'foo');
+  });
+
+  test('should change the `value` property when the `currentValue` property changes', async ({ fastPage, page }) => {
+    const { element } = fastPage;
+
+    await fastPage.setTemplate();
+
+    await element.evaluate((node: TextInput) => {
+      node.currentValue = 'foo';
+    });
+
+    await expect(element).toHaveJSProperty('value', 'foo');
+  });
+
+  test('should set the `current-value` attribute to match the `value` property', async ({ fastPage, page }) => {
+    const { element } = fastPage;
+
+    await fastPage.setTemplate();
+
+    await expect(element).not.toHaveAttribute('current-value');
+
+    await element.evaluate((node: TextInput) => {
+      node.value = 'foo';
+    });
+
+    await expect(element).toHaveAttribute('current-value', 'foo');
+  });
+
+  test('should set the `currentValue` property to match the `value` property', async ({ fastPage, page }) => {
+    const { element } = fastPage;
+
+    await fastPage.setTemplate();
+
+    await expect(element).toHaveJSProperty('currentValue', undefined);
+
+    await element.evaluate((node: TextInput) => {
+      node.value = 'foo';
+    });
+
+    await expect(element).toHaveJSProperty('currentValue', 'foo');
+  });
+});

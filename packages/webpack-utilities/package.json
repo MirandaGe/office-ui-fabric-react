@@ -1,0 +1,25 @@
+{
+  "name": "@fluentui/webpack-utilities",
+  "version": "8.1.29",
+  "description": "Fluent UI React utilities for Webpack bundler.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/fluentui"
+  },
+  "license": "MIT",
+  "scripts": {
+    "build": "yarn run -T just-scripts build",
+    "clean": "yarn run -T just-scripts clean",
+    "code-style": "yarn run -T just-scripts code-style",
+    "just": "yarn run -T just-scripts",
+    "lint": "yarn run -T just-scripts lint"
+  },
+  "dependencies": {
+    "loader-utils": "^2.0.0",
+    "tslib": "^2.1.0"
+  },
+  "peerDependencies": {
+    "react-loadable": ">=5.0.0",
+    "webpack": ">=4.0.0 || >=5.0.0"
+  }
+}

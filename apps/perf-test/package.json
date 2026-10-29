@@ -1,0 +1,24 @@
+{
+  "name": "@fluentui/perf-test",
+  "description": "Perf tests for @fluentui/react.",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "bundle": "yarn run -T just-scripts perf-test:bundle",
+    "lint": "yarn run -T just-scripts lint",
+    "just": "yarn run -T just-scripts",
+    "clean": "yarn run -T just-scripts clean",
+    "code-style": "yarn run -T just-scripts code-style",
+    "type-check": "yarn run -T just-scripts type-check",
+    "test-perf": "yarn run -T just-scripts perf-test"
+  },
+  "dependencies": {
+    "@fluentui/example-data": "*",
+    "@fluentui/react": "*",
+    "@fluentui/scripts-perf-test-flamegrill": "*",
+    "@microsoft/load-themed-styles": "^1.10.26",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "tslib": "^2.1.0"
+  }
+}

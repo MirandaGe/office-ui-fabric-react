@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": true,
+    "rootDir": "./src",
+    "declarationDir": "../../dist/out-tsc/types",
+    "outDir": "../../dist/out-tsc",
+    "lib": ["ES2019", "dom"],
+    "types": ["node", "cypress"]
+  },
+  "exclude": ["**/*.spec.ts", "**/*.test.ts"],
+  "include": ["./src/**/*.ts", "./src/**/*.js"]
+}

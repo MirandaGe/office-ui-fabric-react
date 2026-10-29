@@ -1,0 +1,11 @@
+{
+  "name": "@fluentui/scripts-projects-test",
+  "version": "0.0.1",
+  "private": true,
+  "main": "src/index.ts",
+  "dependencies": {
+    "@fluentui/scripts-monorepo": "*",
+    "@fluentui/scripts-puppeteer": "*",
+    "@fluentui/scripts-utils": "*"
+  }
+}

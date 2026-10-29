@@ -1,0 +1,30 @@
+'use client';
+
+import * as React from 'react';
+import type { ListContextValues, ListState } from './List.types';
+
+export function useListContextValues_unstable(state: ListState): ListContextValues {
+  const { selection, navigationMode, listItemRole, validateListItem } = state;
+
+  const listContext = React.useMemo(
+    () => ({
+      selection,
+      navigationMode,
+      validateListItem,
+    }),
+    [selection, navigationMode, validateListItem],
+  );
+
+  const synchronousContext = React.useMemo(
+    () => ({
+      listItemRole,
+      navigationMode,
+    }),
+    [listItemRole, navigationMode],
+  );
+
+  return {
+    listContext,
+    synchronousContext,
+  };
+}

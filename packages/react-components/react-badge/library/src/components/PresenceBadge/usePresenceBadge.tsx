@@ -1,0 +1,120 @@
+'use client';
+
+import * as React from 'react';
+import { slot } from '@fluentui/react-utilities';
+import {
+  presenceAvailableFilled,
+  presenceAvailableRegular,
+  presenceAwayFilled,
+  presenceBlockedRegular,
+  presenceBusyFilled,
+  presenceDndFilled,
+  presenceDndRegular,
+  presenceOfflineRegular,
+  presenceOofRegular,
+  presenceUnknownRegular,
+} from './presenceIcons';
+import { useBadgeBase_unstable } from '../Badge/index';
+import type {
+  PresenceBadgeBaseProps,
+  PresenceBadgeBaseState,
+  PresenceBadgeProps,
+  PresenceBadgeState,
+} from './PresenceBadge.types';
+
+const iconMap = (status: PresenceBadgeState['status'], outOfOffice: boolean, size: PresenceBadgeState['size']) => {
+  switch (status) {
+    case 'available':
+      return outOfOffice ? presenceAvailableRegular[size] : presenceAvailableFilled[size];
+    case 'away':
+      return outOfOffice ? presenceOofRegular[size] : presenceAwayFilled[size];
+    case 'blocked':
+      return presenceBlockedRegular[size];
+    case 'busy':
+      return outOfOffice ? presenceUnknownRegular[size] : presenceBusyFilled[size];
+    case 'do-not-disturb':
+      return outOfOffice ? presenceDndRegular[size] : presenceDndFilled[size];
+    case 'offline':
+      return outOfOffice ? presenceOofRegular[size] : presenceOfflineRegular[size];
+    case 'out-of-office':
+      return presenceOofRegular[size];
+    case 'unknown':
+      return presenceUnknownRegular[size];
+  }
+};
+
+export const DEFAULT_STRINGS = {
+  busy: 'busy',
+  'out-of-office': 'out of office',
+  away: 'away',
+  available: 'available',
+  offline: 'offline',
+  'do-not-disturb': 'do not disturb',
+  unknown: 'unknown',
+  blocked: 'blocked',
+};
+
+/**
+ * Returns the props and state required to render the component
+ */
+export const usePresenceBadge_unstable = (
+  props: PresenceBadgeProps,
+  ref: React.Ref<HTMLElement>,
+): PresenceBadgeState => {
+  const { size = 'medium', outOfOffice = false, ...baseProps } = props;
+  const status = props.status ?? 'available';
+
+  const IconElement = iconMap(status, outOfOffice, size);
+
+  const state: PresenceBadgeState = {
+    ...usePresenceBadgeBase_unstable(baseProps, ref),
+    appearance: 'filled',
+    color: 'brand',
+    shape: 'circular',
+    size,
+    outOfOffice,
+  };
+
+  if (state.icon) {
+    state.icon.children ??= <IconElement />;
+  }
+
+  return state;
+};
+
+/**
+ * Base hook for PresenceBadge component, which manages state related to presence status and ARIA attributes.
+ * Note: size is excluded from BaseProps as it is a design prop; icon selection uses the 'medium' size default.
+ * To render size-specific icons, use the full usePresenceBadge_unstable hook.
+ *
+ * @param props - User provided props to the PresenceBadge component.
+ * @param ref - User provided ref to be passed to the PresenceBadge component.
+ */
+export const usePresenceBadgeBase_unstable = (
+  props: PresenceBadgeBaseProps,
+  ref: React.Ref<HTMLElement>,
+): PresenceBadgeBaseState => {
+  const { status = 'available', outOfOffice = false } = props;
+
+  const statusText = DEFAULT_STRINGS[status];
+  const oofText = props.outOfOffice && props.status !== 'out-of-office' ? ` ${DEFAULT_STRINGS['out-of-office']}` : '';
+
+  const state: PresenceBadgeBaseState = {
+    ...useBadgeBase_unstable(
+      {
+        'aria-label': statusText + oofText,
+        role: 'img',
+        ...props,
+        icon: slot.optional(props.icon, {
+          renderByDefault: true,
+          elementType: 'span',
+        }),
+      },
+      ref as React.Ref<HTMLDivElement>,
+    ),
+    status,
+    outOfOffice,
+  };
+
+  return state;
+};

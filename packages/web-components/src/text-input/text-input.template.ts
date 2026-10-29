@@ -1,0 +1,51 @@
+import { type ElementViewTemplate, html, ref, slotted } from '@microsoft/fast-element';
+import { endSlotTemplate, startSlotTemplate } from '../patterns/start-end.js';
+import type { TextInput } from './text-input.js';
+import type { TextInputOptions } from './text-input.options.js';
+
+/**
+ * Generates a template for the TextInput component.
+ *
+ * @public
+ */
+export function textInputTemplate<T extends TextInput>(options: TextInputOptions = {}): ElementViewTemplate<T> {
+  return html<T>`
+    <template @keydown="${(x, c) => x.keydownHandler(c.event as KeyboardEvent)}">
+      <label part="label" for="control" class="label" ${ref('controlLabel')}>
+        <slot ${slotted('defaultSlottedNodes')}></slot>
+      </label>
+      <div class="root" part="root">
+        ${startSlotTemplate(options)}
+        <input
+          class="control"
+          part="control"
+          id="control"
+          @change="${(x, c) => x.changeHandler(c.event as InputEvent)}"
+          @input="${(x, c) => x.inputHandler(c.event as InputEvent)}"
+          autocomplete="${x => x.autocomplete}"
+          ?disabled="${x => x.disabled}"
+          list="${x => x.list}"
+          maxlength="${x => x.maxlength}"
+          minlength="${x => x.minlength}"
+          ?multiple="${x => x.multiple}"
+          name="${x => x.name}"
+          pattern="${x => x.pattern}"
+          placeholder="${x => x.placeholder}"
+          ?readonly="${x => x.readOnly}"
+          ?required="${x => x.required}"
+          size="${x => x.size}"
+          spellcheck="${x => x.spellcheck}"
+          type="${x => x.type}"
+          value="${x => x.value}"
+          ${ref('control')}
+        />
+        ${endSlotTemplate(options)}
+      </div>
+    </template>
+  `;
+}
+
+/**
+ * @internal
+ */
+export const template: ElementViewTemplate<TextInput> = textInputTemplate();

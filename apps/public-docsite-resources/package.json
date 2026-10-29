@@ -1,0 +1,57 @@
+{
+  "name": "@fluentui/public-docsite-resources",
+  "version": "8.1.41",
+  "private": true,
+  "description": "Fluent UI React local demo app",
+  "main": "lib-commonjs/index.js",
+  "module": "lib/index.js",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "import": "./lib/index.js",
+      "require": "./lib-commonjs/index.js"
+    },
+    "./lib/AppDefinition": {
+      "types": "./lib/AppDefinition.d.ts",
+      "import": "./lib/AppDefinition.js",
+      "require": "./lib-commonjs/AppDefinition.js"
+    }
+  },
+  "sideEffects": [
+    "*.global.*",
+    "*Examples.*",
+    "*Example.*"
+  ],
+  "typings": "lib/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/fluentui"
+  },
+  "license": "MIT",
+  "scripts": {
+    "build": "yarn run -T just-scripts build",
+    "bundle": "yarn run -T just-scripts bundle",
+    "lint": "yarn run -T eslint --ext .js,.ts,.tsx ./src",
+    "just": "yarn run -T just-scripts",
+    "clean": "yarn run -T just-scripts clean",
+    "code-style": "yarn run -T just-scripts code-style",
+    "start": "yarn run -T just-scripts dev",
+    "update-snapshots": "yarn run -T just-scripts jest -u"
+  },
+  "dependencies": {
+    "@fluentui/azure-themes": "*",
+    "@fluentui/font-icons-mdl2": "*",
+    "@fluentui/react": "*",
+    "@fluentui/react-charting": "*",
+    "@fluentui/react-docsite-components": "*",
+    "@fluentui/react-examples": "*",
+    "@fluentui/react-monaco-editor": "*",
+    "@fluentui/set-version": "*",
+    "@fluentui/theme-samples": "*",
+    "@microsoft/load-themed-styles": "^1.10.26",
+    "office-ui-fabric-core": "^11.0.0",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "tslib": "^2.1.0"
+  }
+}

@@ -1,0 +1,60 @@
+'use client';
+
+import * as React from 'react';
+import type { TreeContextValue } from '../../contexts';
+import type { TreeContextValues, TreeState } from './Tree.types';
+
+export function useTreeContextValues_unstable(state: TreeState): TreeContextValues {
+  if (state.contextType === 'root') {
+    const {
+      openItems,
+      level,
+      contextType,
+      treeType,
+      checkedItems,
+      selectionMode,
+      navigationMode,
+      appearance,
+      size,
+      requestTreeResponse,
+      forceUpdateRovingTabIndex,
+    } = state;
+    // contextType is statically determined by the context
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const tree = React.useMemo<TreeContextValue>(
+      () => ({
+        treeType,
+        size,
+        openItems,
+        appearance,
+        checkedItems,
+        selectionMode,
+        navigationMode,
+        contextType,
+        level,
+        requestTreeResponse,
+        forceUpdateRovingTabIndex,
+      }),
+      [
+        treeType,
+        size,
+        openItems,
+        appearance,
+        checkedItems,
+        selectionMode,
+        navigationMode,
+        contextType,
+        level,
+        requestTreeResponse,
+        forceUpdateRovingTabIndex,
+      ],
+    );
+
+    return { tree };
+  }
+  return {
+    // contextType is statically determined by the context
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    tree: React.useMemo(() => ({ level: state.level, contextType: 'subtree' }), [state.level]),
+  };
+}

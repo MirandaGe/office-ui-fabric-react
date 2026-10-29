@@ -1,0 +1,53 @@
+{
+  "name": "public-docsite-v9",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "implicitDependencies": ["tag:type:stories"],
+  "tags": ["platform:web", "vNext"],
+  "targets": {
+    "build-storybook": {
+      "inputs": [
+        "default",
+        "{workspaceRoot}/.storybook/**",
+        "{workspaceRoot}/scripts/storybook/**",
+        "{projectRoot}/.storybook/**",
+        { "env": "FLUENTUI_ICON_VARIANT" }
+      ],
+      "dependsOn": [
+        "^build",
+        {
+          "projects": ["storybook-llms-extractor"],
+          "target": "build"
+        }
+      ]
+    },
+    "storybook": {
+      "dependsOn": ["^build"]
+    },
+    "storybook:docs": {
+      "dependsOn": ["^build"]
+    },
+    "start": {
+      "dependsOn": ["^build"]
+    },
+    "build-storybook:docsite": {
+      "inputs": [
+        "default",
+        "{workspaceRoot}/.storybook/**",
+        "{workspaceRoot}/scripts/storybook/**",
+        "{projectRoot}/.storybook/**",
+        { "env": "FLUENTUI_ICON_VARIANT" }
+      ],
+      "outputs": ["{projectRoot}/dist/react"],
+      "executor": "nx:noop",
+      "dependsOn": [
+        "build-storybook",
+        "build-storybook:react",
+        {
+          "projects": ["chart-docsite", "web-components", "public-docsite-v9-headless"],
+          "target": "build-storybook:docsite"
+        }
+      ]
+    }
+  }
+}

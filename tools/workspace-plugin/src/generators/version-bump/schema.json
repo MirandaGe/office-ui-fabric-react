@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/schema",
+  "cli": "nx",
+  "id": "version-string-replace",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Library name",
+      "$default": {
+        "$source": "argv",
+        "index": 0
+      }
+    },
+    "bumpType": {
+      "type": "string",
+      "description": "Same kinds of bumps permitted by semver https://github.com/npm/node-semver"
+    },
+    "prereleaseTag": {
+      "type": "string",
+      "description": "Prerelease tag e.g. alpha"
+    },
+    "all": {
+      "type": "boolean",
+      "description": "Bumps all packages in the specified 'scope' at once"
+    },
+    "exclude": {
+      "type": "string",
+      "description": "Comma-delimited list of projects that should not be bumped when using the --all flag"
+    },
+    "explicitVersion": {
+      "type": "string",
+      "description": "Explicit version to set. If provided, bumpType and prereleaseTag are ignored."
+    },
+    "scope": {
+      "type": "string",
+      "enum": ["vNext", "tools"],
+      "default": "vNext",
+      "description": "Which package scope --all targets. 'vNext' (default) for converged packages, 'tools' for public tools packages."
+    },
+    "versionSuffix": {
+      "type": "string",
+      "description": "Suffix to append to each package's current version: {version}-{suffix}. Mutually exclusive with bumpType and explicitVersion. Requires --all."
+    }
+  },
+  "required": []
+}
